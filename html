@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monitor de Socorro</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#2ecc71;
+    transition:0.5s;
+}
+
+.container{
+    text-align:center;
+    color:white;
+}
+
+h1{
+    font-size:55px;
+    margin-bottom:20px;
+}
+
+p{
+    font-size:25px;
+}
+
+#status{
+    margin-top:30px;
+    font-size:18px;
+}
+
+.icone{
+    font-size:100px;
+    margin-bottom:20px;
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<div id="icone" class="icone">✅</div>
+
+<h1 id="titulo">Sistema Normal</h1>
+
+<p id="mensagem">
+Nenhum pedido de socorro foi acionado.
+</p>
+
+<div id="status">
+Conectando ao MQTT...
+</div>
+
+</div>
+
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+<script>
+
+const options = {
+    username: "paula",
+    password: "12345678",
+    clientId: "web_" + Math.random().toString(16).substring(2,10),
+    clean: true,
+    reconnectPeriod: 5000,
+    connectTimeout: 30000
+};
+
+// Tente primeiro com /mqtt
+const client = mqtt.connect(
+    "wss://c3fb64c756d440c18155aa832debd486.s1.eu.hivemq.cloud:8884/mqtt",
+    options
+);
+
+client.on("connect", () => {
+
+    console.log("Conectado!");
+
+    document.getElementById("status").innerHTML =
+    "🟢 Conectado ao MQTT";
+
+    client.subscribe("aviso", (err) => {
+
+        if(err){
+            console.error(err);
+        }else{
+            console.log("Inscrito no tópico aviso");
+        }
+
+    });
+
+});
+
+client.on("message", (topic, message) => {
+
+    const valor = message.toString().trim();
+
+    console.log("Mensagem recebida:", valor);
+
+    if(valor === "1"){
+
+        document.body.style.background = "#d63031";
+
+        document.getElementById("icone").innerHTML = "🚨";
+
+        document.getElementById("titulo").innerHTML =
+        "PEDIDO DE SOCORRO!";
+
+        document.getElementById("mensagem").innerHTML =
+        "Um pedido de socorro foi acionado.<br>Verifique imediatamente a situação!";
+
+    }
+    else if(valor === "0"){
+
+        document.body.style.background = "#2ecc71";
+
+        document.getElementById("icone").innerHTML = "✅";
+
+        document.getElementById("titulo").innerHTML =
+        "Sistema Normal";
+
+        document.getElementById("mensagem").innerHTML =
+        "Nenhum pedido de socorro foi acionado.";
+
+    }
+
+});
+
+client.on("reconnect", () => {
+
+    console.log("Reconectando...");
+
+    document.getElementById("status").innerHTML =
+    "🟡 Reconectando...";
+
+});
+
+client.on("offline", () => {
+
+    console.log("Offline");
+
+    document.getElementById("status").innerHTML =
+    "⚪ Offline";
+
+});
+
+client.on("close", () => {
+
+    console.log("Conexão fechada");
+
+});
+
+client.on("error", (err) => {
+
+    console.error("Erro:", err);
+
+    document.getElementById("status").innerHTML =
+    "❌ " + err.message;
+
+});
+
+</script>
+
+</body>
+</html>
