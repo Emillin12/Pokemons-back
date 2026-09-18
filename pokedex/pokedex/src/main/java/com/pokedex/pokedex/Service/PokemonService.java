@@ -47,6 +47,11 @@ public class PokemonService {
     public Pokemon buscarPokemon() {
 
         return pokemonRepository.PegarPokemon();
-
     }
+
+    public String updatePokemon(String nome, Pokemon pokemon){
+        return pokemonRepository.updatePokemon(nome, pokemon);
+    }
+
+    public String DeletePokemon(String nome)
 }

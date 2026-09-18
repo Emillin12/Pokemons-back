@@ -44,6 +44,8 @@ public class PokemonController {
     public List<Pokemon> getLista(){
         return pokemonService.getLista();
     }
+    @DeleteMapping("/excluir")
+    public PokemonService.removerPokemon(@PathVariable );
 
 
 
